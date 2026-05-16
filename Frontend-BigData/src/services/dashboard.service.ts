@@ -1,33 +1,27 @@
 import { api } from "./api";
-import type { ChartItem, DashboardApiData } from "../types/dashboard-api.types";
 
-interface AreaApiResponse {
-  Área: string;
-  count: number;
-}
+import type {
+  AreaApiResponse,
+  ChartItem,
+  CompanyApiResponse,
+  DashboardApiData,
+  ProblemApiResponse,
+  SentimentApiResponse,
+  UfApiResponse,
+} from "../types/dashboard-api.types";
 
-interface SentimentApiResponse {
-  sentimento: string;
-  count: number;
-}
-
-interface CompanyApiResponse {
-  "Nome Fantasia": string;
-  count: number;
-}
-
-interface ProblemApiResponse {
-  Problema: string;
-  count: number;
-}
-
-interface UfApiResponse {
-  UF: string;
-  count: number;
-}
-
-function normalizeName(value: string | null | undefined) {
+function normalizeName(value: string | null | undefined): string {
   return String(value ?? "").trim();
+}
+
+function normalizeCount(value: number | string | null | undefined): number {
+  const parsed = Number(value ?? 0);
+
+  if (Number.isNaN(parsed)) {
+    return 0;
+  }
+
+  return parsed;
 }
 
 function getArrayFromResponse<T>(response: unknown): T[] {
@@ -44,8 +38,8 @@ function normalizeAreas(response: unknown): ChartItem[] {
   const data = getArrayFromResponse<AreaApiResponse>(response);
 
   return data.map((item) => ({
-    name: normalizeName(item["Área"]),
-    count: Number(item.count ?? 0),
+    name: normalizeName(item.area),
+    count: normalizeCount(item.total),
   }));
 }
 
@@ -54,7 +48,7 @@ function normalizeSentiments(response: unknown): ChartItem[] {
 
   return data.map((item) => ({
     name: normalizeName(item.sentimento),
-    count: Number(item.count ?? 0),
+    count: normalizeCount(item.total),
   }));
 }
 
@@ -62,8 +56,8 @@ function normalizeCompanies(response: unknown): ChartItem[] {
   const data = getArrayFromResponse<CompanyApiResponse>(response);
 
   return data.map((item) => ({
-    name: normalizeName(item["Nome Fantasia"]),
-    count: Number(item.count ?? 0),
+    name: normalizeName(item.empresa),
+    count: normalizeCount(item.total),
   }));
 }
 
@@ -71,8 +65,8 @@ function normalizeProblems(response: unknown): ChartItem[] {
   const data = getArrayFromResponse<ProblemApiResponse>(response);
 
   return data.map((item) => ({
-    name: normalizeName(item.Problema),
-    count: Number(item.count ?? 0),
+    name: normalizeName(item.problema),
+    count: normalizeCount(item.total),
   }));
 }
 
@@ -80,33 +74,66 @@ function normalizeUfs(response: unknown): ChartItem[] {
   const data = getArrayFromResponse<UfApiResponse>(response);
 
   return data.map((item) => ({
-    name: normalizeName(item.UF),
-    count: Number(item.count ?? 0),
+    name: normalizeName(item.uf),
+    count: normalizeCount(item.total),
   }));
 }
 
+function getTopItems(data: ChartItem[], limit = 10): ChartItem[] {
+  return [...data]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+function getBottomItems(data: ChartItem[], limit = 10): ChartItem[] {
+  return [...data]
+    .sort((a, b) => a.count - b.count)
+    .slice(0, limit);
+}
+
+function getAverageItem(data: ChartItem[], label = "Média"): ChartItem[] {
+  if (!data.length) {
+    return [
+      {
+        name: label,
+        count: 0,
+      },
+    ];
+  }
+
+  const total = data.reduce((sum, item) => sum + item.count, 0);
+  const average = total / data.length;
+
+  return [
+    {
+      name: label,
+      count: Number(average.toFixed(2)),
+    },
+  ];
+}
+
 async function getAreas(): Promise<ChartItem[]> {
-  const response = await api.get<unknown>("/areas/");
+  const response = await api.get<unknown>("api/area/");
   return normalizeAreas(response.data);
 }
 
 async function getSentiments(): Promise<ChartItem[]> {
-  const response = await api.get<unknown>("/sentimento/");
+  const response = await api.get<unknown>("api/sentimento/");
   return normalizeSentiments(response.data);
 }
 
 async function getCompanies(): Promise<ChartItem[]> {
-  const response = await api.get<unknown>("/companies/");
+  const response = await api.get<unknown>("api/companies/");
   return normalizeCompanies(response.data);
 }
 
 async function getProblems(): Promise<ChartItem[]> {
-  const response = await api.get<unknown>("/problems/");
+  const response = await api.get<unknown>("api/problems/");
   return normalizeProblems(response.data);
 }
 
 async function getUfs(): Promise<ChartItem[]> {
-  const response = await api.get<unknown>("/uf/");
+  const response = await api.get<unknown>("api/uf/");
   return normalizeUfs(response.data);
 }
 
@@ -121,28 +148,28 @@ export async function getDashboardData(): Promise<DashboardApiData> {
 
   return {
     areas,
-    topAreas: areas,
-    bottomAreas: areas,
-    averageAreas: areas,
+    topAreas: getTopItems(areas),
+    bottomAreas: getBottomItems(areas),
+    averageAreas: getAverageItem(areas, "Média por área"),
 
     sentiments,
-    topSentiments: sentiments,
-    bottomSentiments: sentiments,
-    averageSentiments: sentiments,
+    topSentiments: getTopItems(sentiments),
+    bottomSentiments: getBottomItems(sentiments),
+    averageSentiments: getAverageItem(sentiments, "Média por sentimento"),
 
     companies,
-    topCompanies: companies,
-    bottomCompanies: companies,
-    averageCompanies: companies,
+    topCompanies: getTopItems(companies),
+    bottomCompanies: getBottomItems(companies),
+    averageCompanies: getAverageItem(companies, "Média por empresa"),
 
     problems,
-    topProblems: problems,
-    bottomProblems: problems,
-    averageProblems: problems,
+    topProblems: getTopItems(problems),
+    bottomProblems: getBottomItems(problems),
+    averageProblems: getAverageItem(problems, "Média por problema"),
 
     ufs,
-    topUfs: ufs,
-    bottomUfs: ufs,
-    averageUfs: ufs,
+    topUfs: getTopItems(ufs),
+    bottomUfs: getBottomItems(ufs),
+    averageUfs: getAverageItem(ufs, "Média por UF"),
   };
 }

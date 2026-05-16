@@ -1,4 +1,13 @@
 services:
+  spark:
+    build:
+      context: ./Spark-BigData
+    container_name: bigdata-spark
+    command: python main.py
+    volumes:
+      - ./Spark-BigData/data:/app/data
+    restart: "no"
+
   api:
     build:
       context: ./Backend-BigData
@@ -6,6 +15,13 @@ services:
     ports:
       - "8001:8001"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+    environment:
+      DATA_BASE_PATH: /app/data/refined
+    volumes:
+      - ./Spark-BigData/data/refined:/app/data/refined:ro
+    depends_on:
+      spark:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:

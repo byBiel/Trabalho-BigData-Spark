@@ -29,3 +29,28 @@ export interface DashboardApiData {
   bottomUfs: ChartItem[];
   averageUfs: ChartItem[];
 }
+
+export interface AreaApiResponse {
+  area: string;
+  total: number;
+}
+
+export interface SentimentApiResponse {
+  sentimento: string;
+  total: number;
+}
+
+export interface CompanyApiResponse {
+  empresa: string;
+  total: number;
+}
+
+export interface ProblemApiResponse {
+  problema: string;
+  total: number;
+}
+
+export interface UfApiResponse {
+  uf: string;
+  total: number;
+}

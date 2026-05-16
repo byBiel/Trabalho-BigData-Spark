@@ -5,7 +5,7 @@ from app.services.loader import load_and_group_by_total
 
 
 router = APIRouter(
-    prefix="/sentimento",
+    prefix="/api/sentimento",
     tags=["Sentimento"],
 )
 
