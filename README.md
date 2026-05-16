@@ -501,7 +501,283 @@ docker compose up --build
 
 ---
 
+## Resumo# Trabalho Big Data Spark — Consumidor.gov.br
+
+Projeto desenvolvido para a disciplina de **Big Data**, com o objetivo de processar e visualizar dados da base pública **Consumidor.gov.br**.
+
+A solução utiliza **Apache Spark** para o processamento dos dados, **FastAPI** para disponibilizar os resultados em formato de API e **React + Vite** para exibir um dashboard web com indicadores visuais.
+
+---
+
+## Objetivo do projeto
+
+O objetivo é montar um fluxo completo de análise de dados:
+
+```txt
+Arquivos CSV
+  ↓
+Processamento com Spark
+  ↓
+Geração de arquivos JSON analíticos
+  ↓
+API com FastAPI
+  ↓
+Dashboard com React
+```
+
+A partir dos dados de reclamações de consumidores, o projeto apresenta informações sobre:
+
+- Áreas com maior volume de reclamações.
+- Empresas mais citadas.
+- Principais problemas relatados.
+- Distribuição por UF.
+- Classificação de sentimento.
+- Rankings e indicadores analíticos.
+
+---
+
+## Estrutura inicial do projeto
+
+```txt
+TRABALHO-BIGDATA-SPARK/
+├── Backend-BigData/
+│   ├── app/
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── requirements.txt
+│   └── README.md
+│
+├── Frontend-BigData/
+│   ├── src/
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── package.json
+│   └── README.md
+│
+├── Spark-BigData/
+│   ├── data/
+│   │   ├── raw/
+│   │   ├── refined/
+│   │   └── trusted/
+│   ├── src/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── requirements.txt
+│   └── README.md
+│
+└── docker-compose.yml
+```
+
+Cada pasta possui um `README.md` próprio explicando os detalhes de execução e funcionamento de cada parte do projeto.
+
+---
+
+## Tecnologias utilizadas
+
+### Processamento de dados
+
+- Apache Spark
+- PySpark
+- Python
+
+### Backend
+
+- Python
+- FastAPI
+- Uvicorn
+
+### Frontend
+
+- React
+- Vite
+- TypeScript
+- Axios
+- Recharts
+- Lucide React
+- Nginx
+
+### Ambiente
+
+- Docker
+- Docker Compose
+
+---
+
+## Como funciona
+
+O projeto é dividido em três módulos principais:
+
+```txt
+Spark-BigData      -> Processa os arquivos CSV e gera os JSONs finais
+Backend-BigData    -> Lê os JSONs gerados e disponibiliza os dados via API
+Frontend-BigData   -> Consome a API e apresenta os dados no dashboard
+```
+
+Fluxo geral:
+
+```txt
+1. Os arquivos CSV ficam em Spark-BigData/data/raw
+2. O Spark processa os arquivos
+3. O Spark gera os resultados em Spark-BigData/data/refined/geral
+4. O Backend lê os arquivos JSON gerados
+5. O Backend expõe os dados por endpoints HTTP
+6. O Frontend consome a API
+7. O usuário visualiza os indicadores no dashboard
+```
+
+---
+
+## Como executar o projeto completo
+
+A execução principal deve ser feita pelo `docker-compose.yml` da raiz do projeto.
+
+Na raiz do projeto, execute:
+
+```bash
+docker compose up --build
+```
+
+Esse comando sobe os serviços necessários:
+
+```txt
+spark     -> Executa o processamento dos dados
+api       -> Sobe o backend FastAPI
+frontend  -> Sobe o dashboard React servido pelo Nginx
+```
+
+Após a inicialização, acesse o frontend em:
+
+```txt
+http://localhost:8080
+```
+
+A API fica disponível em:
+
+```txt
+http://localhost:8001
+```
+
+A documentação Swagger da API fica disponível em:
+
+```txt
+http://localhost:8001/docs
+```
+
+---
+
+## Funcionamento do Docker Compose
+
+O `docker-compose.yml` da raiz orquestra os três serviços:
+
+```txt
+spark
+  ↓ gera os arquivos JSON
+
+api
+  ↓ lê os arquivos gerados pelo Spark
+
+frontend
+  ↓ consome a API e exibe o dashboard
+```
+
+O Spark usa a pasta:
+
+```txt
+Spark-BigData/data/raw
+```
+
+para ler os arquivos CSV.
+
+Depois do processamento, os arquivos finais são salvos em:
+
+```txt
+Spark-BigData/data/refined/geral
+```
+
+O backend acessa essa pasta por volume Docker, sem precisar copiar os arquivos para dentro da pasta do backend.
+
+---
+
+## Portas utilizadas
+
+| Serviço | Porta | URL |
+|--------|-------|-----|
+| Frontend | 8080 | `http://localhost:8080` |
+| Backend API | 8001 | `http://localhost:8001` |
+| Swagger API | 8001 | `http://localhost:8001/docs` |
+
+---
+
+## Resultado esperado
+
+Com o projeto rodando, o dashboard deve apresentar:
+
+- Total de reclamações analisadas.
+- Gráficos por área.
+- Distribuição por sentimento.
+- Ranking de empresas.
+- Ranking de principais problemas.
+- Distribuição por UF.
+- Indicadores e tabelas analíticas.
+
+---
+
+## Comandos úteis
+
+Subir todo o projeto:
+
+```bash
+docker compose up --build
+```
+
+Subir em background:
+
+```bash
+docker compose up -d --build
+```
+
+Parar os containers:
+
+```bash
+docker compose down
+```
+
+Ver logs:
+
+```bash
+docker compose logs -f
+```
+
+Rebuild completo:
+
+```bash
+docker compose down
+docker compose up --build
+```
+
+---
+
+## Observações
+
+- A execução recomendada é pelo `docker-compose.yml` da raiz.
+- Os arquivos CSV de entrada devem estar em `Spark-BigData/data/raw`.
+- O Spark gera os arquivos finais em `Spark-BigData/data/refined/geral`.
+- O backend lê os arquivos gerados pelo Spark.
+- O frontend consome apenas a API, não acessa arquivos diretamente.
+- Os READMEs internos explicam cada módulo separadamente.
+
+---
+
 ## Resumo
+
+Este projeto demonstra um fluxo completo usando:
+
+```txt
+Apache Spark + FastAPI + React + Docker Compose
+```
+
+O Spark processa os dados, o FastAPI disponibiliza os resultados e o React apresenta as informações em um dashboard web.
+
 
 Este projeto demonstra um fluxo completo de Big Data:
 
