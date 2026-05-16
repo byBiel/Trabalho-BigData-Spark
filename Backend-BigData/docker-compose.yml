@@ -1,0 +1,11 @@
+services:
+  backend:
+    build:
+      context: .
+    container_name: backend-bigdata
+    ports:
+      - "8001:8001"
+    environment:
+      DATA_BASE_PATH: /app/data/refined
+    volumes:
+      - ../Spark-BigData/data/refined:/app/data/refined:ro
