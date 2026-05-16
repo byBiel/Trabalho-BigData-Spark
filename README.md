@@ -16,7 +16,13 @@ https://dados.mj.gov.br/dataset/reclamacoes-do-consumidor-gov-br
 Os arquivos CSV baixados dessa página devem ser colocados na pasta:
 
 ```txt
-Spark-BigData/data/raw/
+Spark-BigData/data/raw/{ano}/{mes}
+```
+
+Exemplo:
+
+```txt
+Spark-BigData/data/raw/2026/04
 ```
 
 Após isso, o processamento com Spark pode ser executado para gerar os arquivos JSON utilizados pela API e pelo dashboard.
